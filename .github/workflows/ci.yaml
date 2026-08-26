@@ -67,7 +67,7 @@ jobs:
           key: node-modules-${{ hashFiles('package-lock.json') }}
           restore-keys: node-modules-
       - run: npm run build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build
           path: build/
