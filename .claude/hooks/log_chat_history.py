@@ -6,6 +6,7 @@ Reads the hook JSON payload on stdin (per Claude Code hook contract).
 """
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 
@@ -48,10 +49,31 @@ def save_state(state):
         pass
 
 
+SECRET_PATTERNS = [
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"ASIA[0-9A-Z]{16}"),
+    re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
+    re.compile(r"AIza[0-9A-Za-z_-]{35}"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),  # JWT
+    re.compile(r"[A-Za-z0-9_-]{32,}@[A-Za-z0-9.-]+"),  # token@host (e.g. in a clone URL)
+    re.compile(r"(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{40,}(?![A-Za-z0-9_-])"),  # generic long high-entropy token
+]
+
+
+def redact(s):
+    for pat in SECRET_PATTERNS:
+        s = pat.sub("[REDACTED]", s)
+    return s
+
+
 def esc(s):
     if s is None:
         return ""
-    s = str(s).replace("\\", "\\\\").replace('"', '\\"')
+    s = redact(str(s))
+    s = s.replace("\\", "\\\\").replace('"', '\\"')
     s = " ".join(s.split())
     return s
 
