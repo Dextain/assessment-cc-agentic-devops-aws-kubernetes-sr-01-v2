@@ -24,3 +24,4 @@ yarn-error.log*
 
 # Claude Code session tooling
 .chat-history/
+.claude/settings.local.json
