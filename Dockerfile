@@ -1,5 +1,6 @@
-FROM node:15-alpine as builder
+FROM node:15-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
